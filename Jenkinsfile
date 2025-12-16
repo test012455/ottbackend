@@ -21,14 +21,14 @@ pipeline {
 
         stage('Build with Gradle') {
             steps {
-                sh 'gradle clean build'
+                bat 'gradle clean build'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh 'gradle sonar'
+                    bat 'gradle sonar'
                 }
             }
         }
