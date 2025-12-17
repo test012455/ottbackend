@@ -14,7 +14,7 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                bat 'gradle clean build'
+                bat 'gradlew.bat clean build'
             }
         }
 
