@@ -1,49 +1,46 @@
-
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    // If you use SonarQube:
-    // SONAR_HOST_URL = credentials('http://localhost:9000')
-    // SONAR_TOKEN     = credentials(sonar-token)
-  }
-
-  stages {
-    stage('Checkout Code') {
-      steps {
-        checkout scm
-      }
+    tools {
+        jdk 'jdk17'
+        gradle 'gradle'
     }
 
-    stage('Build & Test') {
-      steps {
-        // Use the Gradle wrapper (Windows batch)
-        bat label: 'Gradle build', script: '.\\gradlew.bat clean build --stacktrace'
-      }
+    environment {
+        SONAR_TOKEN = credentials('sonar-token')
     }
 
-    stage('SonarQube Analysis') {
-      when { not { failed() } }
-      steps {
-        // If you have SonarQube integration configured:
-        // withSonarQubeEnv('SonarQube') {
-        //   bat label: 'SonarQube', script: '.\\gradlew.bat sonarqube -Dsonar.login=%SONAR_TOKEN%'
-        // }
-        echo 'SonarQube stage configured; uncomment when ready.'
-      }
-    }
+    stages {
 
-    stage('Deploy with Ansible') {
-      when { not { failed() } }
-      steps {
-        echo 'Deployment skipped here; run from a Linux agent or via SSH.'
-      }
-    }
-  }
+        stage('Checkout Code') {
+            steps {
+                git 'https://github.com/test012455/ottbackend.git'
+            }
+        }
 
-  post {
-    always {
-      archiveArtifacts artifacts: 'build/libs/*.jar', allowEmptyArchive: true
-      junit 'build/test-results/test/*.xml'
+        stage('Build & Test') {
+            steps {
+                bat 'gradle clean build'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube-Local') {
+                    bat 'gradle sonar'
+                }
+            }
+        }
+
+        stage('Deploy with Ansible') {
+            steps {
+                bat '''
+                wsl ansible-playbook ansible/deploy.yml \
+                -i ansible/inventory.ini \
+                --extra-vars "workspace=%WORKSPACE%"
+                '''
+            }
+        }
     }
-   }
+}
+
