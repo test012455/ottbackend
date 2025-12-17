@@ -12,12 +12,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout Code') {
-            steps {
-                git 'https://github.com/test012455/ottbackend.git'
-            }
-        }
-
         stage('Build & Test') {
             steps {
                 bat 'gradle clean build'
@@ -37,7 +31,7 @@ pipeline {
                 bat '''
                 wsl ansible-playbook ansible/deploy.yml \
                 -i ansible/inventory.ini \
-                --extra-vars "workspace=%WORKSPACE%"
+                --extra-vars "workspace=/mnt/c/ProgramData/Jenkins/.jenkins/workspace/%JOB_NAME%"
                 '''
             }
         }
