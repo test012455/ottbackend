@@ -3,7 +3,7 @@ pipeline {
 
     tools {
         jdk 'jdk17'
-        gradle 'gradle-7.6.5'
+        gradle 'gradle'
     }
 
     environment {
