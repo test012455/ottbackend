@@ -3,11 +3,22 @@ pipeline {
 
     tools {
         jdk 'jdk17'
-        gradle 'gradle'
+        gradle 'gradle-7'
+    }
+
+    environment {
+        SONAR_TOKEN = credentials('sonar-token')
     }
 
     stages {
-        stage('Build') {
+
+        stage('Checkout Code') {
+            steps {
+                git 'https://github.com/test012455/ottbackend.git'
+            }
+        }
+
+        stage('Build & Test') {
             steps {
                 bat 'gradle clean build'
             }
@@ -15,9 +26,19 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    bat 'gradle sonarqube'
+                withSonarQubeEnv('SonarQube-Local') {
+                    bat 'gradle sonar'
                 }
+            }
+        }
+
+        stage('Deploy with Ansible') {
+            steps {
+                bat '''
+                wsl ansible-playbook ansible/deploy.yml \
+                -i ansible/inventory.ini \
+                --extra-vars "workspace=%WORKSPACE%"
+                '''
             }
         }
     }
