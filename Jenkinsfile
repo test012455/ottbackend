@@ -10,13 +10,12 @@ pipeline {
         SONAR_TOKEN = credentials('sonar-token-new')
     }
 
-    stages {
+    stage('Build & Test') {
+    steps {
+        bat '"%GRADLE_HOME%\\bin\\gradle.bat" clean build'
+    }
+}
 
-        stage('Build & Test') {
-            steps {
-                bat 'gradlew.bat clean build'
-            }
-        }
 
         stage('SonarQube Analysis') {
             steps {
