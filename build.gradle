@@ -1,19 +1,19 @@
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        mavenCentral()
-    }
+plugins {
+    id 'java'
+    id 'org.sonarqube' version '4.4.1.3373'
 }
 
-plugins {
-    id "java"
-    id "org.sonarqube" version "4.4.1.3373"
+group = 'com.example'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
 }
 
 sonar {
     properties {
-        property "sonar.projectKey", "ottbackend"
-        property "sonar.projectName", "ottbackend"
-        property "sonar.host.url", "http://localhost:9000"
+        property 'sonar.projectKey', 'ottbackend'
+        property 'sonar.projectName', 'ottbackend'
+        property 'sonar.host.url', 'http://localhost:9000'
     }
 }
