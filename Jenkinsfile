@@ -4,12 +4,7 @@ pipeline {
     tools {
         jdk 'jdk17'
     }
-    
-tools {
-    gradle 'gradle'
-}
 
-bat 'gradle clean build'
     environment {
         SONAR_TOKEN = credentials('sonar-token')
     }
@@ -18,14 +13,14 @@ bat 'gradle clean build'
 
         stage('Build & Test') {
             steps {
-                bat 'gradle'
+                bat 'gradlew.bat clean build'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube-Local') {
-                    bat 'gradle.bat sonarqube -Dsonar.login=%SONAR_TOKEN%'
+                    bat 'gradlew.bat sonarqube -Dsonar.login=%SONAR_TOKEN%'
                 }
             }
         }
