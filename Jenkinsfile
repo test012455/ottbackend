@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        jdk 'jdk17'
+        jdk 'JDK17'
     }
 
     environment {
@@ -11,27 +11,33 @@ pipeline {
 
     stages {
 
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: ''
+            }
+        }
+
         stage('Build & Test') {
             steps {
-                bat 'gradlew.bat clean build'
+                bat '.\\gradlew.bat clean build'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube-Local') {
-                    bat 'gradlew.bat sonarqube -Dsonar.login=%SONAR_TOKEN%'
+                withSonarQubeEnv('SonarLocal') {
+                    bat """
+                    .\\gradlew.bat sonarqube ^
+                    -Dsonar.projectKey=local-app ^
+                    -Dsonar.login=%SONAR_TOKEN%
+                    """
                 }
             }
         }
 
         stage('Deploy with Ansible') {
             steps {
-                bat '''
-                wsl ansible-playbook ansible/deploy.yml ^
-                -i ansible/inventory.ini ^
-                --extra-vars "workspace=%WORKSPACE%"
-                '''
+                bat 'ansible-playbook ansible/deploy.yml -i ansible/inventory.ini'
             }
         }
     }
