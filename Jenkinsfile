@@ -13,10 +13,12 @@ pipeline {
     stages {
 
         stage('Checkout Code') {
-            steps {
-                git 'https://github.com/test012455/ottbackend.git'
-            }
-        }
+    steps {
+        git branch: 'main',
+            url: 'https://github.com/test012455/ottbackend.git'
+    }
+}
+
 
         stage('Build & Test') {
             steps {
