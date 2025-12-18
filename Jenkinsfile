@@ -3,7 +3,6 @@ pipeline {
 
     tools {
         jdk 'jdk17'
-        gradle 'gradle'
     }
 
     environment {
@@ -12,24 +11,16 @@ pipeline {
 
     stages {
 
-        stage('Checkout Code') {
-    steps {
-        git branch: 'main',
-            url: 'https://github.com/test012455/ottbackend.git'
-    }
-}
-
-
         stage('Build & Test') {
             steps {
-                bat 'gradle clean build'
+                bat 'gradlew.bat clean build'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube-Local') {
-                    bat 'gradle sonar'
+                    bat 'gradlew.bat sonarqube -Dsonar.login=%SONAR_TOKEN%'
                 }
             }
         }
@@ -37,12 +28,11 @@ pipeline {
         stage('Deploy with Ansible') {
             steps {
                 bat '''
-                wsl ansible-playbook ansible/deploy.yml \
-                -i ansible/inventory.ini \
+                wsl ansible-playbook ansible/deploy.yml ^
+                -i ansible/inventory.ini ^
                 --extra-vars "workspace=%WORKSPACE%"
                 '''
             }
         }
     }
 }
-
