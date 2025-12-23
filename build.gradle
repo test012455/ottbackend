@@ -27,18 +27,3 @@ test {
     useJUnitPlatform()
 
 }
- 
-pluginManagement {
-
-    repositories {
-
-        gradlePluginPortal()
-
-        mavenCentral()
-
-    }
-
-}
-
-rootProject.name = 'ottbackend'
- 
