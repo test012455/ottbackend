@@ -60,10 +60,14 @@ pipeline {
 
     }
    
-    stage('Deploy with Ansible') {
+        stage('Deploy with Ansible') {
+        
             steps {
+                
                 bat 'ansible-playbook ansible/deploy.yml -i ansible/inventory.ini'
+                
             }
+        
         }
     
     post {
