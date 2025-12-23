@@ -4,9 +4,9 @@ pipeline {
  
     tools {
 
-        jdk 'jdk17'
+        jdk 'jdk-17.0.17.10-hotspot'
 
-        gradle 'Gradle'
+        gradle 'gradle'
 
     }
  
