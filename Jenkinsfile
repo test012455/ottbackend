@@ -6,7 +6,7 @@ pipeline {
 
         jdk 'jdk-17'
 
-        gradle 'gradle'
+        gradle 'Gradle'
 
     }
  
