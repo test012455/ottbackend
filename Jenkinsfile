@@ -1,44 +1,94 @@
 pipeline {
+
     agent any
-
+ 
     tools {
+
         jdk 'jdk17'
-    }
 
-    environment {
-        SONAR_TOKEN = credentials('sonar-token')
-    }
+        gradle 'Gradle'
 
+    }
+ 
     stages {
+ 
+        stage('Checkout Code') {
 
-        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/test012455/ottbackend.git'
-            }
-        }
 
+                git branch: 'main',
+
+                    url: 'https://github.com/test012455/ottbackend.git'
+
+            }
+
+        }
+ 
+        stage('Gradle Clean') {
+
+            steps {
+
+                bat 'gradle clean'
+
+            }
+
+        }
+ 
         stage('Build & Test') {
-            steps {
-                bat 'gradle clean build'
-            }
-        }
 
+            steps {
+
+                bat 'gradle build'
+
+            }
+
+        }
+ 
         stage('SonarQube Analysis') {
+
             steps {
-                withSonarQubeEnv('SonarLocal') {
-                    bat """
-                    .\\gradlew.bat sonarqube ^
-                    -Dsonar.projectKey=local-app ^
-                    -Dsonar.login=%SONAR_TOKEN%
-                    """
+
+                withSonarQubeEnv('SonarQube') {
+
+                    bat 'gradle sonar'
+
                 }
+
             }
+
+        }
+ 
+        stage('Deploy using Ansible') {
+
+            steps {
+
+                bat '''
+
+                wsl ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
+
+                '''
+
+            }
+
         }
 
-        stage('Deploy with Ansible') {
-            steps {
-                bat 'ansible-playbook ansible/deploy.yml -i ansible/inventory.ini'
-            }
-        }
     }
+ 
+    post {
+
+        success {
+
+            echo '✅ Build, Quality Check & Deployment successful!'
+
+        }
+
+        failure {
+
+            echo '❌ Pipeline failed!'
+
+        }
+
+    }
+
 }
+ 
