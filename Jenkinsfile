@@ -6,57 +6,47 @@ pipeline {
         gradle 'Gradle'
     }
 
+    environment {
+        SONAR_SCANNER_OPTS = "-Xmx512m"
+    }
+
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/ramky3064/ottbackend-testcase.git'
+                checkout scm
             }
         }
 
-        stage('Gradle Clean') {
+        stage('Build') {
             steps {
-                bat 'gradle clean'
-            }
-        }
-
-        stage('Build & Test') {
-            steps {
-                bat 'gradle build'
+                bat 'gradle clean build'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    bat 'gradle sonar'
+                    bat '''
+                    gradle sonarqube ^
+                      -Dsonar.projectKey=ott-backend ^
+                      -Dsonar.projectName=ott-backend ^
+                      -Dsonar.host.url=http://localhost:9000 ^
+                      -Dsonar.login=%SONAR_AUTH_TOKEN%
+                    '''
                 }
             }
         }
 
-        stage('Check User') {
-            steps {
-                bat 'whoami'
-            }
-        }
-
-        stage('Deploy using Ansible') {
+        stage('Deploy') {
             steps {
                 bat '''
-wsl ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
-'''
-
+                echo Deploying application...
+                mkdir C:\\apps\\ott-backend 2>nul
+                copy /Y build\\libs\\*.jar C:\\apps\\ott-backend\\ott-backend.jar
+                start "" java -jar C:\\apps\\ott-backend\\ott-backend.jar
+                '''
             }
-        }
-    }
-
-    post {
-        success {
-            echo '✅ Build, Quality Check & Deployment successful!'
-        }
-        failure {
-            echo '❌ Pipeline failed!'
         }
     }
 }
