@@ -1,0 +1,36 @@
+- name: Ensure deploy directory exists
+
+  win_file:
+
+    path: C:\ott-app
+
+    state: directory
+ 
+- name: Copy JAR to deploy directory
+
+  win_copy:
+
+    src: "{{ workspace }}\\build\\libs\\"
+
+    dest: C:\ott-app\
+
+    remote_src: yes
+ 
+- name: Stop existing application (if running)
+
+  win_shell: |
+
+    taskkill /IM java.exe /F
+
+  ignore_errors: yes
+ 
+- name: Start application
+
+  win_shell: |
+
+    java -jar C:\ott-app\*.jar
+
+  async: 10
+
+  poll: 0
+ 
