@@ -1,5 +1,0 @@
-- hosts: local
-  gather_facts: yes
-  tasks:
-    - debug:
-        msg: "Deploying to local machine"
