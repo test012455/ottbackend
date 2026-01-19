@@ -2,11 +2,7 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'node18'
-    }
-
-    environment {
-        SONARQUBE_ENV = 'local-sonar'
+        nodejs 'node20'
     }
 
     stages {
@@ -39,8 +35,11 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('local-sonar') {
-                    bat 'sonar-scanner'
+                script {
+                    def scannerHome = tool 'sonar-scanner'
+                    withSonarQubeEnv('local-sonar') {
+                        bat "${scannerHome}\\bin\\sonar-scanner.bat"
+                    }
                 }
             }
         }
