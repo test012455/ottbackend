@@ -33,7 +33,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarLocal') {
+                withSonarQubeEnv('local-sonar') {
                     bat """
                     npm install -g sonar-scanner
                     sonar-scanner \
