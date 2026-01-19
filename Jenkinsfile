@@ -44,10 +44,12 @@ pipeline {
             }
         }
  
-        stage('Deploy with Ansible') {
-            steps {
-                bat 'ansible-playbook ansible/deploy.yml'
-            }
-        }
+        stage('Verify PM2') {
+                  steps {
+                   bat 'where pm2'
+                   bat 'pm2 -v'
+  }
+}
+
     }
 }
