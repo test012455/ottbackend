@@ -50,6 +50,15 @@ pipeline {
                    bat 'pm2 -v'
   }
 }
-
+      stage('Deploy with PM2') {
+  steps {
+    bat '''
+      echo Deploying with PM2...
+      pm2 delete ott-backend || echo App not running
+      pm2 start ecosystem.config.js --env production
+      pm2 save
+    '''
+  }
+}
     }
 }
