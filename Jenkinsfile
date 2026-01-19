@@ -1,92 +1,62 @@
 pipeline {
-
     agent any
- 
+
     tools {
-
-        jdk 'jdk-17'
-
-        gradle 'Gradle'
-
+        nodejs 'node18'
     }
- 
+
     environment {
-
-        SONAR_PROJECT_KEY  = 'ott-backend'
-
-        SONAR_PROJECT_NAME = 'ott-backend'
-
-        ANSIBLE_PLAYBOOK   = 'ansible/deploy.yml'
-
+        SONARQUBE_ENV = 'local-sonar'
     }
- 
+
     stages {
- 
+
         stage('Checkout') {
-
             steps {
-
-                checkout scm
-
+                git branch: 'main',
+                    credentialsId: 'github-creds',
+                    url: 'https://github.com/test012455/ottbackend.git'
             }
-
         }
- 
+
+        stage('Install Dependencies') {
+            steps {
+                bat 'npm install'
+            }
+        }
+
         stage('Build') {
-
             steps {
-
-                bat 'gradle clean build'
-
+                bat 'npm run build'
             }
-
         }
- 
+
+        stage('Test') {
+            steps {
+                bat 'npm run test -- --coverage'
+            }
+        }
+
         stage('SonarQube Analysis') {
-
             steps {
-
-                withSonarQubeEnv('SonarQube') {
-
-                    bat '''
-
-                    gradle sonarqube ^
-
-                      -Dsonar.projectKey=ott-backend ^
-
-                      -Dsonar.projectName=ott-backend ^
-
-                      -Dsonar.host.url=http://localhost:9000 ^
-
-                      -Dsonar.login=%SONAR_AUTH_TOKEN%
-
-                    '''
-
+                withSonarQubeEnv('local-sonar') {
+                    bat 'sonar-scanner'
                 }
-
             }
-
         }
- 
-stage('Deploy with Ansible') {
 
-    steps {
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
 
-        bat '''
-
-        echo Running Ansible Deployment...
-
-        wsl ansible-playbook %ANSIBLE_PLAYBOOK% -i ansible/inventory.ini ^
-
-        --extra-vars "workspace=%WORKSPACE%"
-
-        '''
-
+        stage('Deploy with Ansible') {
+            steps {
+                bat 'ansible-playbook ansible/deploy.yml'
+            }
+        }
     }
-
 }
-
-    }
-
-}
- 
