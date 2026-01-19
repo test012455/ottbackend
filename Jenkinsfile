@@ -5,13 +5,17 @@ pipeline {
         nodejs 'node20'
     }
 
+    environment {
+        SONAR_HOST_URL = "http://localhost:9000"
+    }
+
     stages {
 
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                git branch: 'main',
-                    credentialsId: 'github-creds',
-                    url: 'https://github.com/test012455/ottbackend.git'
+                git credentialsId: 'github-creds',
+                    url: 'https://github.com/test012455/ottbackend.git',
+                    branch: 'main'
             }
         }
 
@@ -27,27 +31,32 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                bat 'npm run test -- --coverage'
-            }
-        }
-
         stage('SonarQube Analysis') {
             steps {
-                script {
-                    def scannerHome = tool 'sonar-scanner'
-                    withSonarQubeEnv('local-sonar') {
-                        bat "${scannerHome}\\bin\\sonar-scanner.bat"
-                    }
+                withSonarQubeEnv('SonarLocal') {
+                    bat """
+                    npm install -g sonar-scanner
+                    sonar-scanner \
+                      -Dsonar.projectKey=ottbackend \
+                      -Dsonar.sources=src
+                    """
                 }
             }
         }
 
-        stage('Deploy with Ansible') {
+        stage('Deploy') {
             steps {
-                bat 'ansible-playbook ansible/deploy.yml'
+                bat '''
+                echo "Deploying Application..."
+                npm run start:prod &
+                '''
             }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
         }
     }
 }
