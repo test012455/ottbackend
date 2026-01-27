@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  PRODUCER
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+}
+
+model User {
+  id             Int           @id @default(autoincrement())
+  name           String?
+  email          String?       @unique
+  phone          String?       @unique
+  password       String?
+  role           Role          @default(USER)
+  isVerified     Boolean       @default(false)
+  status         UserStatus    @default(ACTIVE)   // ⭐ NEW FIELD
+  parentalControl Boolean      @default(false)  // ⭐ NEW FIELD
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Relations
+  sessions        Session[]
+  oauthAccounts   OAuthAccount[]
+  verification    VerificationToken[]
+  resetTokens     PasswordResetToken[]
+}
+
+model OAuthAccount {
+  id           Int      @id @default(autoincrement())
+  provider     String   // "google" | "apple" | "facebook"
+  providerId   String   // user's provider UID
+
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int
+
+  createdAt    DateTime @default(now())
+}
+
+
+model Session {
+  id            Int       @id @default(autoincrement())
+  refreshToken  String    @unique
+  userAgent     String?
+  ipAddress     String?
+  expiresAt     DateTime
+
+  user          User      @relation(fields: [userId], references: [id])
+  userId        Int
+
+  createdAt     DateTime  @default(now())
+}
+
+
+model VerificationToken {
+  id          Int       @id @default(autoincrement())
+  identifier  String    // email or phone
+  otp         String
+  expiresAt   DateTime
+
+  user        User?     @relation(fields: [userId], references: [id])
+  userId      Int?
+
+  createdAt   DateTime  @default(now())
+}
+
+model PasswordResetToken {
+  id          Int       @id @default(autoincrement())
+  token       String    @unique
+  expiresAt   DateTime
+
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+
+  createdAt   DateTime  @default(now())
+}
